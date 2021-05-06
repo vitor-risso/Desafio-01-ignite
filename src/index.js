@@ -15,11 +15,7 @@ function checksExistsUserAccount(req, res, next) {
   // Complete aqui
   const { username } = req.headers
 
-
   const checkIfUserExists = users.find(user => user.userName === username)
-
-  console.log(users)
-  console.log(req)
 
   if (!checkIfUserExists) {
     return res.status(400).json({ "msg": "User does not exists" })
@@ -27,7 +23,7 @@ function checksExistsUserAccount(req, res, next) {
 
   req.user = checkIfUserExists
 
-  next()
+  return next()
 }
 
 app.post('/users', (req, res) => {
@@ -64,6 +60,25 @@ app.get('/todos', checksExistsUserAccount, (req, res) => {
 
 app.post('/todos', checksExistsUserAccount, (req, res) => {
   // Complete aqui
+
+  const { title, deadline } = req.body
+  const { user } = req
+
+  const deadlineToSave = new Date(deadline + " 00:00")
+
+  console.log(deadline)
+  console.log(deadlineToSave)
+
+  const todoInput = {
+    id: uuid(),
+    title,
+    deadline: deadlineToSave,
+    created_at: new Date()
+  }
+
+  user.todos.push(todoInput)
+
+  return res.status(201).json(user.todos)
 });
 
 app.put('/todos/:id', checksExistsUserAccount, (req, res) => {
