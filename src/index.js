@@ -13,6 +13,21 @@ const users = [];
 
 function checksExistsUserAccount(req, res, next) {
   // Complete aqui
+  const { username } = req.headers
+
+
+  const checkIfUserExists = users.find(user => user.userName === username)
+
+  console.log(users)
+  console.log(req)
+
+  if (!checkIfUserExists) {
+    return res.status(400).json({ "msg": "User does not exists" })
+  }
+
+  req.user = checkIfUserExists
+
+  next()
 }
 
 app.post('/users', (req, res) => {
@@ -35,11 +50,16 @@ app.post('/users', (req, res) => {
   users.push(inputUser)
 
   return res.status(201).json(inputUser)
-  
+
 });
 
 app.get('/todos', checksExistsUserAccount, (req, res) => {
   // Complete aqui
+
+  const { user } = req
+
+  return res.send(user.todos)
+
 });
 
 app.post('/todos', checksExistsUserAccount, (req, res) => {
