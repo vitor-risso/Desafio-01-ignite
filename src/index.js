@@ -2,8 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const { v4: uuid } = require('uuid')
 
-// const { v4: uuidv4 } = require('uuid');
-
 const app = express();
 
 app.use(cors());
@@ -11,60 +9,62 @@ app.use(express.json());
 
 const users = [];
 
-function checksExistsUserAccount(req, res, next) {
+function checksExistsUserAccount(request, response, next) {
   // Complete aqui
-  const { username } = req.headers
+  const { username } = request.headers
 
-  const checkIfUserExists = users.find(user => user.userName === username)
+  const checkIfUserExists = users.find(user => user.username === username)
 
   if (!checkIfUserExists) {
-    return res.status(400).json({ "msg": "User does not exists" })
+    return response.status(400).json({
+      error: 'Mensagem do erro'
+    })
   }
 
-  req.user = checkIfUserExists
+  request.user = checkIfUserExists
 
   return next()
 }
 
-app.post('/users', (req, res) => {
+app.post('/users', (request, response) => {
   // Complete aqui
-  const { name, userName } = req.body
+  const { name, username } = request.body
 
-  const checkIfUserAlreadyExists = users.find(user => user.userName === userName)
+  const checkIfUserAlreadyExists = users.find(user => user.username === username)
 
   if (checkIfUserAlreadyExists) {
-    return res.status(400).json({ "msg": "User already existis" })
+    return response.status(400).json({ error: 'Mensagem do erro' })
   }
 
   const inputUser = {
     id: uuid(),
     name,
-    userName,
+    username,
     todos: []
   }
 
   users.push(inputUser)
 
-  return res.status(201).json(inputUser)
+  return response.status(201).json(inputUser)
 
 });
 
-app.get('/todos', checksExistsUserAccount, (req, res) => {
+app.get('/todos', checksExistsUserAccount, (request, response) => {
   // Complete aqui
 
-  const { user } = req
+  const { user } = request
 
-  return res.send(user.todos)
+  return response.send(user.todos)
 
 });
 
-app.post('/todos', checksExistsUserAccount, (req, res) => {
+app.post('/todos', checksExistsUserAccount, (request, response) => {
   // Complete aqui
 
-  const { title, deadline } = req.body
-  const { user } = req
+  const { title, deadline } = request.body
+  const { user } = request
 
-  const deadlineToSave = new Date(deadline + " 00:00")
+  const deadlineToSave = new Date(deadline)
 
   const todoInput = {
     id: uuid(),
@@ -76,21 +76,23 @@ app.post('/todos', checksExistsUserAccount, (req, res) => {
 
   user.todos.push(todoInput)
 
-  return res.status(201).json(user.todos)
+  return response.status(201).json(todoInput)
 });
 
-app.put('/todos/:id', checksExistsUserAccount, (req, res) => {
+app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
   // Complete aqui
 
-  const { user } = req
-  const { title, deadline } = req.body
-  const { id } = req.params
+  const { user } = request
+  const { title, deadline } = request.body
+  const { id } = request.params
 
   let todoIndex = user.todos.findIndex(todo => todo.id === id)
-  const newDeadline = new Date(deadline + " 00:00")
+  const newDeadline = new Date(deadline)
 
   if (todoIndex === -1) {
-    return res.status(400).json({ "msg": "Todo not found" })
+    return response.status(404).json({
+      error: 'Mensagem do erro'
+    })
   }
 
   user.todos[todoIndex] = {
@@ -99,42 +101,49 @@ app.put('/todos/:id', checksExistsUserAccount, (req, res) => {
     deadline: newDeadline
   }
 
-  return res.json(user.todos)
+  return response.json(user.todos[todoIndex])
 
 });
 
-app.patch('/todos/:id/done', checksExistsUserAccount, (req, res) => {
+app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
   // Complete aqui
 
-  const { user } = req
-  const { id } = req.params
+  const { user } = request
+  const { id } = request.params
 
   const todoIndex = user.todos.findIndex(todo => todo.id === id)
+
+  if(todoIndex == -1){
+    return response.status(404).send({	error: 'Mensagem do erro'
+  })
+  }
 
   user.todos[todoIndex] = {
     ...user.todos[todoIndex],
     done: true
   }
 
-  return res.json(user.todos)
+  return response.json(user.todos[todoIndex])
 
 });
 
-app.delete('/todos/:id', checksExistsUserAccount, (req, res) => {
+app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
   // Complete aqui
 
-  const {user} = req
-  const {id} = req.params
+  const { user } = request
+  const { id } = request.params
 
-  const todoIndex = user.todos.findIndex(todo => todo.id ===id)  
+  const todoIndex = user.todos.findIndex(todo => todo.id === id)
 
-  if(todoIndex == -1){
-    return res.status(400).json({"msg": "Todo not found"})
+  if (todoIndex == -1) {
+    return response.status(404).json({
+      error: 'Mensagem do erro'
+    })
   }
 
   user.todos.splice(todoIndex, 1)
 
-  return res.json(user.todos)
+  return response.status(204).json(user.todos)
 
 });
 
