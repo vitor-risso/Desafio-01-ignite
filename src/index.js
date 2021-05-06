@@ -72,6 +72,7 @@ app.post('/todos', checksExistsUserAccount, (req, res) => {
   const todoInput = {
     id: uuid(),
     title,
+    done: false,
     deadline: deadlineToSave,
     created_at: new Date()
   }
