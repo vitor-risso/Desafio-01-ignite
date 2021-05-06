@@ -66,9 +66,6 @@ app.post('/todos', checksExistsUserAccount, (req, res) => {
 
   const deadlineToSave = new Date(deadline + " 00:00")
 
-  console.log(deadline)
-  console.log(deadlineToSave)
-
   const todoInput = {
     id: uuid(),
     title,
@@ -108,6 +105,19 @@ app.put('/todos/:id', checksExistsUserAccount, (req, res) => {
 
 app.patch('/todos/:id/done', checksExistsUserAccount, (req, res) => {
   // Complete aqui
+
+  const { user } = req
+  const { id } = req.params
+
+  const todoIndex = user.todos.findIndex(todo => todo.id === id)
+
+  user.todos[todoIndex] = {
+    ...user.todos[todoIndex],
+    done: true
+  }
+
+  return res.json(user.todos)
+
 });
 
 app.delete('/todos/:id', checksExistsUserAccount, (req, res) => {
