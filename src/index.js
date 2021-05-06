@@ -84,6 +84,26 @@ app.post('/todos', checksExistsUserAccount, (req, res) => {
 
 app.put('/todos/:id', checksExistsUserAccount, (req, res) => {
   // Complete aqui
+
+  const { user } = req
+  const { title, deadline } = req.body
+  const { id } = req.params
+
+  let todoIndex = user.todos.findIndex(todo => todo.id === id)
+  const newDeadline = new Date(deadline + " 00:00")
+
+  if (todoIndex === -1) {
+    return res.status(400).json({ "msg": "Todo not found" })
+  }
+
+  user.todos[todoIndex] = {
+    ...user.todos[todoIndex],
+    title,
+    deadline: newDeadline
+  }
+
+  return res.json(user.todos)
+
 });
 
 app.patch('/todos/:id/done', checksExistsUserAccount, (req, res) => {
